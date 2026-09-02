@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F3D6D8">
+<meta name="theme-color" content="#EBB763">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,104 +15,64 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
   :root{
-    --ground:#F3D6D8;
     --panel:#F7F1E3;
-    --panel-2:#EFE5CF;
     --ink:#17151A;
-    --muted:#6E6459;
     --alarm:#E0342C;
-    --armed:#C77800;
-    --ok:#1F8A4C;
     --sun:#FFD23F;
-    --shadow:4px 4px 0 rgba(23,21,26,.28);
   }
   *{box-sizing:border-box}
   html{color-scheme:light}
+  html,body{height:100%}
   body{
-    margin:0;
-    background:var(--ground);
-    color:var(--ink);
-    font-family:"VT323",monospace;
-    font-size:19px;
-    line-height:1.35;
-    -webkit-tap-highlight-color:transparent;
-    min-height:100dvh;
-  }
-  body.flash{animation:alarmflash .5s steps(2,end) infinite}
-  @keyframes alarmflash{
-    0%,49%{background:var(--ground)}
-    50%,100%{background:#EFA79B}
+    margin:0;background:#EBB763;color:var(--ink);
+    font-family:"VT323",monospace;font-size:19px;line-height:1.35;
+    -webkit-tap-highlight-color:transparent;overflow:hidden;
   }
   .px{font-family:"Press Start 2P","VT323",monospace}
 
-  .wrap{max-width:440px;margin:0 auto;padding:14px 14px 40px;display:flex;flex-direction:column;gap:16px}
-
-  /* ---------- top bar ---------- */
-  .topbar{
-    display:flex;justify-content:space-between;align-items:center;gap:10px;
-    border:2px solid var(--ink);background:var(--panel);box-shadow:var(--shadow);
-    padding:8px 12px;
-  }
-  .topbar .px{font-size:13px;letter-spacing:.02em}
-  .topbar .mode-tag{font-size:17px;color:var(--muted)}
-
-  /* ---------- windows ---------- */
-  .window{border:2px solid var(--ink);background:var(--panel);box-shadow:var(--shadow)}
-  .titlebar{
-    display:flex;align-items:center;gap:8px;
-    border-bottom:2px solid var(--ink);
-    background:repeating-linear-gradient(to bottom,var(--panel) 0 2px,var(--ink) 2px 3px,var(--panel) 3px 5px);
-    padding:6px 8px;
-  }
-  .tb-btn{width:12px;height:12px;border:2px solid var(--ink);background:var(--panel);flex:none}
-  .titlebar .title{
-    font-family:"Press Start 2P",monospace;font-size:10px;
-    background:var(--panel);padding:2px 8px;white-space:nowrap;
-  }
-  .tb-stripes{flex:1}
-
-  /* ---------- beach scene ---------- */
-  .scene{position:relative;overflow:hidden;background:#1B75BB}
-  .scene canvas{
-    display:block;width:100%;height:auto;
-    image-rendering:pixelated;
+  /* ---------- full-screen stage ---------- */
+  .stage{position:fixed;inset:0;overflow:hidden;background:#EBB763}
+  .stage canvas{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;image-rendering:pixelated;
     user-select:none;-webkit-user-select:none;
   }
-  .scene[data-mode="alarm"] canvas{animation:shake .16s steps(2,end) infinite}
+  .stage[data-mode="alarm"] canvas{animation:shake .16s steps(2,end) infinite}
   @keyframes shake{
     0%{transform:translate(0,0)}
-    25%{transform:translate(-4px,2px)}
-    50%{transform:translate(3px,-2px)}
-    75%{transform:translate(-3px,-2px)}
-    100%{transform:translate(4px,2px)}
+    25%{transform:translate(-5px,3px)}
+    50%{transform:translate(4px,-3px)}
+    75%{transform:translate(-4px,-3px)}
+    100%{transform:translate(5px,3px)}
   }
   .flashov{position:absolute;inset:0;background:rgba(224,52,44,.30);opacity:0;pointer-events:none}
-  .scene[data-mode="alarm"] .flashov{animation:fl .5s steps(2,end) infinite}
+  .stage[data-mode="alarm"] .flashov{animation:fl .5s steps(2,end) infinite}
   @keyframes fl{0%,49%{opacity:0}50%,100%{opacity:1}}
 
+  /* ---------- HUD ---------- */
   .hud{
-    position:absolute;top:4%;left:0;right:0;
-    display:flex;flex-direction:column;align-items:center;gap:12px;
+    position:absolute;top:calc(5% + env(safe-area-inset-top));left:0;right:0;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
     pointer-events:none;text-align:center;
   }
   .hud-word{
-    font-family:"Press Start 2P",monospace;font-size:13px;color:#FDFDF6;
+    font-family:"Press Start 2P",monospace;font-size:14px;color:#FDFDF6;
     text-shadow:2px 0 0 var(--ink),-2px 0 0 var(--ink),0 2px 0 var(--ink),0 -2px 0 var(--ink),
       2px 2px 0 var(--ink),-2px -2px 0 var(--ink),2px -2px 0 var(--ink),-2px 2px 0 var(--ink);
   }
   .hud-word[data-tone="armed"]{color:var(--sun)}
   .hud-word[data-tone="alarm"]{color:#FF6A5E}
-  .hud-word[data-tone="ok"]{color:#7CF2A8}
   .hud-time{
-    font-family:"Press Start 2P",monospace;font-size:36px;color:#FDFDF6;
+    font-family:"Press Start 2P",monospace;font-size:40px;color:#FDFDF6;
     font-variant-numeric:tabular-nums;letter-spacing:.03em;
     text-shadow:3px 0 0 var(--ink),-3px 0 0 var(--ink),0 3px 0 var(--ink),0 -3px 0 var(--ink),
       3px 3px 0 var(--ink),-3px -3px 0 var(--ink),3px -3px 0 var(--ink),-3px 3px 0 var(--ink);
   }
   .hud-time[data-tone="alarm"]{color:#FF6A5E}
 
+  /* ---------- scream bubbles ---------- */
   .bubble{
-    position:absolute;display:none;
+    position:absolute;display:none;z-index:3;
     background:#FDFDF6;border:3px solid var(--ink);
     box-shadow:4px 4px 0 rgba(23,21,26,.35);
     padding:9px 11px;
@@ -124,110 +84,47 @@
     background:#FDFDF6;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);
     transform:rotate(45deg);
   }
-  .bubble.b1{left:7%;top:30%}
+  .bubble.b1{left:6%;top:24%}
   .bubble.b1::after{left:60%}
-  .bubble.b2{left:50%;top:37%}
+  .bubble.b2{left:50%;top:44%}
   .bubble.b2::after{left:25%}
-  .bubble.b3{left:12%;top:68%}
+  .bubble.b3{left:8%;top:66%}
   .bubble.b3::after{left:70%}
-  .bubble.b4{left:58%;top:81%}
+  .bubble.b4{left:56%;top:77%}
   .bubble.b4::after{left:30%}
-  .scene[data-mode="alarm"] .bubble{display:block;animation:jig .22s steps(2,end) infinite}
+  .stage[data-mode="alarm"] .bubble{display:block;animation:jig .22s steps(2,end) infinite}
   .bubble.b2{animation-delay:.11s}
   .bubble.b3{animation-delay:.06s}
   .bubble.b4{animation-delay:.17s}
   @keyframes jig{0%{transform:translate(0,0)}50%{transform:translate(-2px,2px)}100%{transform:translate(2px,-1px)}}
 
-  @media (prefers-reduced-motion:reduce){
-    *{animation-duration:.001s!important;transition-duration:.001s!important}
-    body.flash{animation:none;background:#EFA79B}
-    .scene[data-mode="alarm"] canvas{animation:none}
-    .scene[data-mode="alarm"] .flashov{animation:none;opacity:1}
-    .scene[data-mode="alarm"] .bubble{animation:none}
-  }
-
-  .filebar{
-    display:flex;justify-content:space-between;gap:10px;
-    border-top:2px solid var(--ink);
-    background:var(--panel-2);padding:4px 10px;font-size:17px;color:var(--muted);
-  }
-  .filebar b{color:var(--ink);font-weight:400}
-
-  /* ---------- deck ---------- */
-  .deck{padding:13px 14px 15px;display:flex;flex-direction:column;gap:11px;border-top:2px solid var(--ink)}
-  .status-row{display:flex;align-items:center;gap:10px}
-  .lamp{width:12px;height:12px;border:2px solid var(--ink);background:var(--panel-2);flex:none}
-  .lamp[data-tone="armed"]{background:var(--sun)}
-  .lamp[data-tone="alarm"]{background:var(--alarm)}
-  .lamp[data-tone="ok"]{background:#59C98B}
-  body.flash .lamp[data-tone="alarm"]{animation:blink .5s steps(2,end) infinite}
-  @keyframes blink{0%,49%{background:var(--alarm)}50%,100%{background:var(--panel)}}
-  .status-word{font-family:"Press Start 2P",monospace;font-size:12px}
-  .status-word[data-tone="armed"]{color:var(--armed)}
-  .status-word[data-tone="alarm"]{color:var(--alarm)}
-  .status-word[data-tone="ok"]{color:var(--ok)}
-  .status-note{margin-left:auto;color:var(--muted);font-size:17px;text-align:right}
-
-  .progress{height:14px;border:2px solid var(--ink);background:var(--panel-2);position:relative}
-  .progress-fill{position:absolute;inset:0;right:auto;width:100%;background:var(--ink)}
-
-  /* ---------- motion meter ---------- */
-  .meter-wrap{display:flex;flex-direction:column;gap:6px}
-  .meter-head{display:flex;justify-content:space-between;align-items:baseline}
-  .meter-label{font-size:17px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-  .meter-read{font-size:17px;color:var(--muted)}
-  .meter-read b{color:var(--ink);font-weight:400}
-  .meter{
-    display:flex;gap:3px;height:16px;position:relative;
-    border:2px solid var(--ink);background:var(--panel-2);padding:2px;
-  }
-  .meter .blk{flex:1;background:transparent}
-  .meter .blk.on{background:#3BA55D}
-  .meter .blk.on.mid{background:var(--armed)}
-  .meter .blk.on.hi{background:var(--alarm)}
-  .meter-tickmark{
-    position:absolute;top:-8px;left:50%;transform:translateX(-50%);
-    width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
-    border-top:6px solid var(--ink);
-  }
-  .meter-hint{color:var(--muted);font-size:17px}
-
-  /* ---------- controls ---------- */
-  .controls{padding:14px;display:flex;flex-direction:column;gap:14px}
-  #idleControls,#armedControls,#doneControls{border-top:2px solid var(--ink)}
-  #armedControls .controls{border-top:0}
-  .field{display:flex;flex-direction:column;gap:7px}
-  .field-label{font-size:17px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{
-    font-family:"VT323",monospace;font-size:19px;
-    background:var(--panel);color:var(--ink);
-    border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,21,26,.28);
-    padding:5px 12px;cursor:pointer;
-  }
-  .chip:active{transform:translate(2px,2px);box-shadow:none}
-  .chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);box-shadow:none;transform:translate(2px,2px)}
-  button:focus-visible,.chip:focus-visible{outline:3px solid var(--alarm);outline-offset:2px}
-
-  .seg{display:flex;border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,21,26,.28)}
-  .seg button{
-    flex:1;background:var(--panel);color:var(--muted);border:0;
-    font-family:"VT323",monospace;font-size:19px;line-height:1.15;padding:8px 0 7px;cursor:pointer;
-    border-right:2px solid var(--ink);
-  }
-  .seg button:last-child{border-right:0}
-  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
-  .seg button[aria-pressed="true"] small{color:#CFC6B4}
-  .seg small{display:block;font-size:15px;color:var(--muted)}
-
-  .arm-btn{
-    border:2px solid var(--ink);box-shadow:var(--shadow);cursor:pointer;
+  /* ---------- the one button ---------- */
+  .main-btn{
+    position:absolute;left:14px;right:14px;
+    bottom:calc(14px + env(safe-area-inset-bottom));z-index:4;
+    border:3px solid var(--ink);box-shadow:5px 5px 0 rgba(23,21,26,.4);cursor:pointer;
     background:var(--alarm);color:#FFF3EA;
     font-family:"Press Start 2P",monospace;font-size:14px;
-    padding:17px;width:100%;text-transform:uppercase;
+    padding:21px 12px;text-transform:uppercase;overflow:hidden;
+    touch-action:none;user-select:none;-webkit-user-select:none;
   }
-  .arm-btn:active{transform:translate(3px,3px);box-shadow:none}
-  .arm-btn.sunny{background:var(--sun);color:var(--ink)}
+  .main-btn[data-state="active"]{background:var(--panel);color:var(--ink)}
+  .main-btn:active{transform:translate(2px,2px);box-shadow:3px 3px 0 rgba(23,21,26,.4)}
+  .main-btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+  .main-btn .hold-fill{
+    position:absolute;inset:0;right:auto;width:calc(var(--p,0)*100%);
+    background:repeating-linear-gradient(45deg,var(--alarm) 0 8px,#F2A69B 8px 16px);
+  }
+  .main-btn span{position:relative}
+
+  /* ---------- warnings ---------- */
+  .warn{
+    position:absolute;left:14px;right:14px;z-index:5;
+    border:2px solid var(--ink);background:var(--sun);box-shadow:4px 4px 0 rgba(23,21,26,.35);
+    color:var(--ink);padding:10px 14px;font-size:18px;
+  }
+  #noSensor{top:calc(14px + env(safe-area-inset-top))}
+  #permWarn{bottom:calc(104px + env(safe-area-inset-bottom))}
   .ghost-btn{
     background:var(--panel);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,21,26,.28);
     color:var(--ink);font-family:"VT323",monospace;font-size:19px;
@@ -235,25 +132,11 @@
   }
   .ghost-btn:active{transform:translate(2px,2px);box-shadow:none}
 
-  /* ---------- hold to disarm ---------- */
-  .hold-btn{
-    position:relative;border:2px solid var(--ink);box-shadow:var(--shadow);
-    background:var(--panel);color:var(--ink);cursor:pointer;
-    font-family:"Press Start 2P",monospace;font-size:12px;
-    padding:19px;width:100%;overflow:hidden;text-transform:uppercase;
-    touch-action:none;user-select:none;-webkit-user-select:none;
-  }
-  .hold-btn .hold-fill{
-    position:absolute;inset:0;right:auto;width:calc(var(--p,0)*100%);
-    background:repeating-linear-gradient(45deg,var(--alarm) 0 8px,#F2A69B 8px 16px);
-  }
-  .hold-btn span{position:relative}
-  .hold-note{color:var(--muted);font-size:17px;text-align:center;padding:0 14px 14px}
-
-  /* ---------- warnings ---------- */
-  .warn{
-    border:2px solid var(--ink);background:var(--sun);box-shadow:var(--shadow);
-    color:var(--ink);padding:10px 14px;font-size:18px;
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;transition-duration:.001s!important}
+    .stage[data-mode="alarm"] canvas{animation:none}
+    .stage[data-mode="alarm"] .flashov{animation:none;opacity:1}
+    .stage[data-mode="alarm"] .bubble{animation:none}
   }
   [hidden]{display:none!important}
 </style>
@@ -261,7 +144,21 @@
 <body>
 
 
-<div class="wrap">
+<div class="stage" id="scene" data-mode="idle">
+  <canvas id="sceneCv" width="128" height="232" role="img"
+    aria-label="Pixel art animation: two people sunbathing on the beach, sipping cocktails"></canvas>
+  <div class="flashov"></div>
+
+  <div class="hud">
+    <span class="hud-word px" id="hudWord" data-tone="idle">HANDS OFF</span>
+    <span class="hud-time px" id="hudTime" data-tone="idle">--</span>
+  </div>
+
+  <div class="bubble b1" aria-hidden="true">AAAAH!!</div>
+  <div class="bubble b2" aria-hidden="true">Do nothing!!!</div>
+  <div class="bubble b3" aria-hidden="true">Drop the phone!</div>
+  <div class="bubble b4" aria-hidden="true">Aaagghh</div>
+
   <div class="warn" id="noSensor" hidden>
     No motion sensors found on this device. Open this page in your
     <b>phone's browser</b> — that's where the beach works.
@@ -277,73 +174,10 @@
     </div>
   </div>
 
-  <div class="window">
-    <div class="titlebar">
-      <span class="tb-btn"></span>
-      <span class="tb-stripes"></span>
-      <span class="title">GPX Málaga 2026</span>
-      <span class="tb-stripes"></span>
-      <span class="tb-btn"></span>
-    </div>
-
-    <div class="scene" id="scene" data-mode="idle">
-      <canvas id="sceneCv" width="128" height="150" role="img" aria-label="Pixel art animation: two people sunbathing on the beach, sipping cocktails"></canvas>
-      <div class="flashov"></div>
-      <div class="hud">
-        <span class="hud-word px" id="hudWord" data-tone="idle">HANDS OFF</span>
-        <span class="hud-time px" id="hudTime" data-tone="idle">25:00</span>
-      </div>
-      <div class="bubble b1" aria-hidden="true">AAAAH!!</div>
-      <div class="bubble b2" aria-hidden="true">Do nothing!!!</div>
-      <div class="bubble b3" aria-hidden="true">Drop the phone!</div>
-      <div class="bubble b4" aria-hidden="true">Aaagghh</div>
-    </div>
-
-    <div class="deck">
-      <div class="status-row">
-        <span class="lamp" id="lamp" data-tone="idle"></span>
-        <span class="status-word px" id="statusWord" data-tone="idle">STANDBY</span>
-        <span class="status-note" id="statusNote">set a timer, press arm</span>
-      </div>
-    </div>
-
-    <div class="controls" id="idleControls">
-    <div class="field">
-      <span class="field-label">Session length</span>
-      <div class="chips" id="durChips">
-        <button class="chip" data-min="wed" aria-pressed="true">till wednesday</button>
-        <button class="chip" data-min="trip">whole trip</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="field-label">Sensitivity</span>
-      <div class="seg" id="sensSeg">
-        <button data-sens="chill">CHILL<small>big moves only</small></button>
-        <button data-sens="normal" aria-pressed="true">NORMAL<small>pick-up &amp; tilt</small></button>
-        <button data-sens="strict">STRICT<small>barely a nudge</small></button>
-      </div>
-    </div>
-
-    <button class="arm-btn" id="armBtn">☼ Arm the villa</button>
-    <button class="ghost-btn" id="testBtn">test the scream (1 sec, LOUD)</button>
-    </div>
-
-    <div id="armedControls" hidden>
-      <div class="controls">
-        <button class="hold-btn" id="holdBtn">
-          <span class="hold-fill"></span>
-          <span id="holdText">Hold 3s to disarm</span>
-        </button>
-      </div>
-      <div class="hold-note">grabbing the phone to disarm WILL wake everyone up</div>
-    </div>
-
-    <div class="controls" id="doneControls" hidden>
-      <button class="arm-btn sunny" id="againBtn">★ New session</button>
-    </div>
-  </div>
-
+  <button class="main-btn" id="mainBtn" data-state="idle">
+    <span class="hold-fill"></span>
+    <span id="mainLabel">☼ Arm the villa</span>
+  </button>
 </div>
 
 <script>
@@ -351,48 +185,28 @@
   "use strict";
 
   // ---------- state ----------
-  const THRESHOLDS = { chill: 2.8, normal: 1.4, strict: 0.7 };
-  let mode = "idle";              // idle | arming | armed | alarm | done
-  let durationMin = "wed";        // "wed" (till Wednesday) | "trip" (until disarmed)
-  let sensitivity = "normal";
-  let endTime = 0, totalMs = 0, armingLeft = 0, armedAt = 0, armedWall = 0;
+  const THRESHOLD = 1.4;          // m/s² composite; picking the phone up crosses this easily
+  const TRIP_END = new Date(2026, 9, 10).getTime();   // Saturday 10 October 2026, midnight local
+  let mode = "idle";              // idle | arming | armed | alarm
+  let armingLeft = 0, armedAt = 0, armedWall = 0;
 
   // motion
   let motionLevel = 0, lastAccel = null, gotMotion = false, lastMotionTs = 0, stillSince = 0;
+
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- els ----------
   const $ = id => document.getElementById(id);
   const els = {
     scene: $("scene"), hudWord: $("hudWord"), hudTime: $("hudTime"),
-    lamp: $("lamp"), statusWord: $("statusWord"), statusNote: $("statusNote"),
-    // meter & progress were removed from the page; detached stubs keep the logic inert
-    dialSub: document.createElement("div"), progFill: document.createElement("div"),
-    meter: document.createElement("div"), motionRead: document.createElement("span"),
-    meterHint: document.createElement("div"),
-    fileStatus: document.createElement("span"),   // filebar removed from the page
-    idleControls: $("idleControls"), armedControls: $("armedControls"), doneControls: $("doneControls"),
-    armBtn: $("armBtn"), testBtn: $("testBtn"), againBtn: $("againBtn"),
-    holdBtn: $("holdBtn"), holdText: $("holdText"),
+    mainBtn: $("mainBtn"), mainLabel: $("mainLabel"),
     noSensor: $("noSensor"), permWarn: $("permWarn"),
-    durChips: $("durChips"), sensSeg: $("sensSeg"),
   };
-
   if (!("DeviceMotionEvent" in window)) els.noSensor.hidden = false;
-
-  // meter blocks
-  const N_BLK = 22, blocks = [];
-  for (let i = 0; i < N_BLK; i++) {
-    const b = document.createElement("div");
-    b.className = "blk";
-    els.meter.appendChild(b);
-    blocks.push(b);
-  }
-
-  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- pixel beach, drawn from scratch every frame ----------
   const g2 = $("sceneCv").getContext("2d");
-  const W = 128, H = 150;
+  const W = 128, H = 232;
   const PAL = {
     sky:"#7FD4F2", sun:"#FFD23F", sunEdge:"#F2A33C", cloud:"#FDFDF6",
     seaDeep:"#1F8ECD", sea:"#35A8DC", seaLite:"#6CC6E8", shallows:"#A8E4EC",
@@ -402,13 +216,13 @@
     umbRed:"#E0463C", umbYel:"#FFD23F", umbTeal:"#2FA89E", umbBlue:"#3E6FD0", pole:"#8A5A33",
   };
   const DUDES = [
-    { x:37, y:72, ty:64, th:56, skin:"#C98850", skinDk:"#A96B38", hair:"#5A3A22",
+    { x:40, y:118, ty:110, th:56, skin:"#C98850", skinDk:"#A96B38", hair:"#5A3A22",
       suit:"#2E4A78", tw:"#3E6FD0", st:"#B8D0F2", gl:"warm", off:0,   long:false },
-    { x:83, y:80, ty:72, th:56, skin:"#E8B36B", skinDk:"#C68F4C", hair:"#F5DE9C",
+    { x:88, y:138, ty:130, th:56, skin:"#E8B36B", skinDk:"#C68F4C", hair:"#F5DE9C",
       suit:"#8E4AB8", tw:"#E86F8E", st:"#F7C6D2", gl:"cool", off:2.3, long:true },
   ];
   const SPECKS = [];
-  for (let i = 0; i < 90; i++) SPECKS.push([(i*37+11)%W, 48+((i*53+7)%(H-52)), i%3]);
+  for (let i = 0; i < 130; i++) SPECKS.push([(i*37+11)%W, 70+((i*53+7)%(H-76)), i%3]);
 
   function p(x, y, w, h, c) { g2.fillStyle = c; g2.fillRect(x|0, y|0, w, h); }
   function disc(x0, y0, r, c) {
@@ -422,15 +236,15 @@
     const A = kind === "warm"
       ? ["#FFD23F","#FF9436","#E0342C","#59C98B","#E0342C"]
       : ["#59C98B","#1FA7A0","#2E86C1","#FF9436","#8E5AC8"];
-    p(x+4, y-3, 1, 3, A[4]);        // straw
+    p(x+4, y-3, 1, 3, A[4]);
     p(x+3, y-4, 2, 1, A[4]);
-    p(x, y, 7, 1, PAL.white);       // rim
+    p(x, y, 7, 1, PAL.white);
     p(x+1, y+1, 5, 1, A[0]);
     p(x+1, y+2, 5, 1, A[1]);
     p(x+2, y+3, 3, 1, A[2]);
-    p(x+3, y+4, 1, 2, PAL.ink);     // stem
-    p(x+1, y+6, 5, 1, PAL.ink);     // base
-    p(x-1, y-1, 2, 2, A[3]);        // garnish
+    p(x+3, y+4, 1, 2, PAL.ink);
+    p(x+1, y+6, 5, 1, PAL.ink);
+    p(x-1, y-1, 2, 2, A[3]);
   }
   function towel(d) {
     const x0 = d.x - 15;
@@ -439,11 +253,11 @@
       p(x0, yy, 30, 3, d.st);
       p(x0, yy+3, 30, 1, PAL.white);
     }
-    for (let xx = x0+1; xx < x0+30; xx += 3) {   // fringe
+    for (let xx = x0+1; xx < x0+30; xx += 3) {
       p(xx, d.ty-2, 1, 2, d.tw); p(xx, d.ty+d.th, 1, 2, d.tw);
     }
   }
-  function umbrella(x0, y0, t) {
+  function umbrella(x0, y0) {
     p(x0, y0, 2, 42, PAL.pole);
     p(x0-1, y0+40, 4, 2, "#6E4626");
     const cols = [PAL.umbRed, PAL.umbYel, PAL.umbTeal, PAL.umbBlue];
@@ -461,41 +275,33 @@
   function person(d, t) {
     towel(d);
     const hx = d.x, hy = d.y, shY = hy+5, isF = d.long;
-    const scream = mode === "alarm" || testing, done = mode === "done";
+    const scream = mode === "alarm";
     const ph = ((t + d.off) % 4.6) / 4.6;
-    const sipping = !scream && !done && ph > 0.60 && ph < 0.86;
-    const lifting = !scream && !done && ((ph > 0.50 && ph <= 0.60) || (ph >= 0.86 && ph < 0.96));
+    const sipping = !scream && ph > 0.60 && ph < 0.86;
+    const lifting = !scream && ((ph > 0.50 && ph <= 0.60) || (ph >= 0.86 && ph < 0.96));
 
-    if (isF) {   // long blonde hair spilling down her side
+    if (isF) {
       p(hx-6, hy-5, 12, 4, d.hair);
       p(hx+4, hy-4, 5, 30, d.hair);
       p(hx+5, hy+24, 4, 8, d.hair);
     }
-    // left arm folded behind head
     p(hx-10, hy-4, 3, 6, d.skin);
     p(hx-8, hy+1, 4, 4, d.skin);
-    // right arm folded behind head too, unless it's busy drinking
-    if (!scream && !done && !sipping && !lifting) {
+    if (!scream && !sipping && !lifting) {
       p(hx+7, hy-4, 3, 6, d.skin);
       p(hx+4, hy+1, 4, 4, d.skin);
     }
-    // head + hair
     disc(hx, hy, 4, d.skin);
     if (!isF) { p(hx-4, hy-4, 9, 2, d.hair); p(hx-5, hy-3, 3, 2, d.hair); p(hx+3, hy-3, 2, 2, d.hair); }
     else { p(hx-4, hy-4, 9, 2, d.hair); p(hx-5, hy-3, 2, 3, d.hair); }
-    // face
     if (scream) {
       p(hx-2, hy-1, 1, 1, PAL.ink); p(hx+2, hy-1, 1, 1, PAL.ink);
       p(hx-1, hy+1, 3, 3, PAL.mouth);
-    } else if (done) {
-      p(hx-2, hy-1, 1, 1, PAL.ink); p(hx+2, hy-1, 1, 1, PAL.ink);
-      p(hx-1, hy+2, 3, 1, PAL.ink);
     } else {
-      p(hx-3, hy, 2, 1, PAL.ink); p(hx+2, hy, 2, 1, PAL.ink);   // dozing eyes
+      p(hx-3, hy, 2, 1, PAL.ink); p(hx+2, hy, 2, 1, PAL.ink);
       if (sipping) p(hx, hy+2, 2, 2, PAL.mouth);
       else p(hx-1, hy+2, 2, 1, PAL.ink);
     }
-    // torso + swimsuit
     const sw = isF ? 5 : 6;
     p(hx-sw, shY, sw*2, 3, d.skin);
     if (isF) {
@@ -510,28 +316,23 @@
     p(hx-4, legY, 3, 16, d.skin); p(hx+1, legY, 3, 16, d.skin);
     p(hx-4, legY+16, 3, 2, d.skinDk); p(hx+1, legY+16, 3, 2, d.skinDk);
 
-    // right arm + cocktail, by pose
     if (scream) {
       const j = reduceMotion ? 0 : Math.round(Math.sin(t*30 + d.off));
       p(hx+6, hy-7+j, 3, 8, d.skin); p(hx+6, hy-9+j, 3, 2, d.skinDk);
       p(hx-9, hy-8-j, 3, 8, d.skin); p(hx-9, hy-10-j, 3, 2, d.skinDk);
-      // dropped glass, drink soaking into the sand
       p(hx+11, legY-4, 7, 2, d.gl === "warm" ? "#FF9436" : "#1FA7A0");
       p(hx+12, legY-8, 1, 4, PAL.white);
       p(hx+13, legY-7, 3, 2, d.gl === "warm" ? "#FFD23F" : "#59C98B");
       p(hx+16, legY-8, 1, 4, PAL.ink);
-    } else if (done) {
-      p(hx+6, hy-3, 3, 9, d.skin);          // cheers!
-      glass(hx+4, hy-11, d.gl);
     } else if (sipping) {
       p(hx+6, shY-1, 3, 4, d.skin);
       p(hx+4, hy+3, 5, 3, d.skin);
-      glass(hx+2, hy+3, d.gl);              // straw to the lips
+      glass(hx+2, hy+3, d.gl);
     } else if (lifting) {
       p(hx+6, shY, 3, 6, d.skin);
       glass(hx+5, shY+1, d.gl);
     } else {
-      glass(hx+12, shY+8, d.gl);            // parked on the sand
+      glass(hx+12, shY+8, d.gl);
     }
   }
   function bigScreamFace(x0, y0, baseR, d, t) {
@@ -545,13 +346,12 @@
     const x = x0 + jx, y = y0 + jy;
     disc(x, y, r+1, PAL.ink);
     disc(x, y, r, d.skin);
-    // hair
     if (d.long) {
       for (let dy = -r; dy <= -Math.floor(r*0.5); dy++) {
         const w = Math.floor(Math.sqrt(r*r - dy*dy));
         p(x-w, y+dy, 2*w+1, 1, d.hair);
       }
-      p(x-r-2, y-Math.floor(r*0.5), 5, Math.floor(r*1.5), d.hair);   // wild mane
+      p(x-r-2, y-Math.floor(r*0.5), 5, Math.floor(r*1.5), d.hair);
       p(x+r-3, y-Math.floor(r*0.5), 5, Math.floor(r*1.5), d.hair);
     } else {
       for (let dy = -r; dy <= -Math.floor(r*0.55); dy++) {
@@ -560,10 +360,8 @@
       }
       for (let k = -2; k <= 2; k++) p(x+k*5-1, y-Math.floor(r*0.55), 2, 3, d.hair);
     }
-    // raised eyebrows
     p(x-Math.floor(r*0.62), y-Math.floor(r*0.46), Math.floor(r*0.4), 3, PAL.ink);
     p(x+Math.floor(r*0.22), y-Math.floor(r*0.46), Math.floor(r*0.4), 3, PAL.ink);
-    // huge bloodshot eyes, pinprick pupils
     const ew = Math.floor(r*0.34), eh = Math.floor(r*0.30);
     const ey = y - Math.floor(r*0.26);
     for (const ex of [x-Math.floor(r*0.52), x+Math.floor(r*0.18)]) {
@@ -573,7 +371,6 @@
       p(ex+ew-3, ey+eh-2, 2, 1, "#E05A5A");
       p(ex+Math.floor(ew/2), ey+Math.floor(eh/2), 2, 2, PAL.ink);
     }
-    // gaping mouth: teeth, throat, uvula
     const my = y + Math.floor(r*0.42), mr = Math.floor(r*0.5);
     disc(x, my, mr+1, PAL.ink);
     disc(x, my, mr, "#7A1F1F");
@@ -583,7 +380,6 @@
     }
     p(x-Math.floor(mr*0.7), my-Math.floor(mr*0.55), Math.floor(mr*1.4), 3, PAL.white);
     p(x-1, my+1, 3, 4, "#C4372E");
-    // sweat
     const sj = reduceMotion ? 0 : (Math.floor(t*8) % 2);
     p(x-r+2, y-Math.floor(r*0.1)+sj, 2, 4, "#9FE0F2");
     p(x+r-4, y+Math.floor(r*0.05)-sj, 2, 4, "#9FE0F2");
@@ -591,54 +387,53 @@
   function drawScene() {
     const t = performance.now() / 1000;
     // sky + sun
-    p(0, 0, W, 15, PAL.sky);
-    disc(14, 8, 6, PAL.sunEdge); disc(14, 8, 5, PAL.sun);
+    p(0, 0, W, 31, PAL.sky);
+    disc(16, 11, 7, PAL.sunEdge); disc(16, 11, 6, PAL.sun);
     const rl = (Math.floor(t*2) % 2 === 0) ? 4 : 2;
-    p(14-8-rl, 8, rl, 1, PAL.sunEdge); p(14+9, 8, rl, 1, PAL.sunEdge);
-    p(6, 2, 2, 2, PAL.sunEdge); p(21, 2, 2, 2, PAL.sunEdge);
+    p(16-9-rl, 11, rl, 1, PAL.sunEdge); p(16+10, 11, rl, 1, PAL.sunEdge);
+    p(7, 3, 2, 2, PAL.sunEdge); p(24, 3, 2, 2, PAL.sunEdge);
     // clouds
     const cx1 = W - ((t*2.2) % (W+40)) - 20;
-    cloudPx(cx1, 3); cloudPx(((cx1+84) % (W+40)) - 20, 8);
+    cloudPx(cx1, 5); cloudPx(((cx1+84) % (W+40)) - 20, 15);
     // sea bands
-    p(0, 15, W, 7, PAL.seaDeep);
-    p(0, 22, W, 8, PAL.sea);
-    p(0, 30, W, 6, PAL.seaLite);
-    p(0, 36, W, 5, PAL.shallows);
+    p(0, 31, W, 9, PAL.seaDeep);
+    p(0, 40, W, 9, PAL.sea);
+    p(0, 49, W, 7, PAL.seaLite);
+    p(0, 56, W, 7, PAL.shallows);
     // wave crests rolling toward shore
     for (let k = 0; k < 3; k++) {
-      const yy = 16 + ((t*5 + k*7.3) % 20);
+      const yy = 33 + ((t*5 + k*8.6) % 26);
       const off = (k*5 + Math.floor(t*10)) % 14;
       for (let x = -14 + off; x < W; x += 14) p(x, yy, 6, 1, "rgba(253,253,246,.8)");
     }
     // foam edge + wet sand + dry sand
     const tide = Math.sin(t*0.9) * 2;
     for (let x = 0; x < W; x++) {
-      const ys = 41 + Math.round(Math.sin(x*0.45 + t*2)*1.5 + tide);
+      const ys = 64 + Math.round(Math.sin(x*0.45 + t*2)*1.5 + tide);
       p(x, ys, 1, 1, PAL.foam);
       p(x, ys+1, 1, 2, PAL.wetSand);
       p(x, ys+3, 1, H-ys-3, PAL.sand);
     }
     for (const s of SPECKS) p(s[0], s[1], 1, 1, s[2] ? PAL.sandDk : PAL.sandLt);
     // shells + starfish
-    p(12, 124, 2, 2, PAL.white); p(11, 125, 1, 1, "#E8C8D4");
-    p(58, 144, 2, 1, "#F2C4CE"); p(59, 143, 1, 1, PAL.white);
-    p(110, 132, 1, 3, "#E0784C"); p(109, 133, 3, 1, "#E0784C");
-    p(108, 135, 1, 1, "#E0784C"); p(112, 135, 1, 1, "#E0784C");
+    p(14, 192, 2, 2, PAL.white); p(13, 193, 1, 1, "#E8C8D4");
+    p(60, 212, 2, 1, "#F2C4CE"); p(61, 211, 1, 1, PAL.white);
+    p(106, 180, 1, 3, "#E0784C"); p(105, 181, 3, 1, "#E0784C");
+    p(104, 183, 1, 1, "#E0784C"); p(108, 183, 1, 1, "#E0784C");
     // umbrella + its shade
-    p(90, 84, 24, 2, PAL.sandDk); p(94, 86, 16, 1, PAL.sandDk);
-    umbrella(100, 41, t);
+    p(86, 122, 24, 2, PAL.sandDk); p(90, 124, 16, 1, PAL.sandDk);
+    umbrella(96, 79);
     // the sunbathers
     for (const d of DUDES) person(d, t);
     // jump-scare close-ups while screaming
-    if (mode === "alarm" || testing) {
-      bigScreamFace(40, 72, 24, DUDES[0], t);
-      bigScreamFace(92, 96, 22, DUDES[1], t);
+    if (mode === "alarm") {
+      bigScreamFace(44, 118, 28, DUDES[0], t);
+      bigScreamFace(88, 160, 25, DUDES[1], t);
     }
   }
 
   // ---------- audio ----------
   let ctx = null, scream = null, vibTimer = 0;
-
   function audio() {
     if (!ctx) {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -663,10 +458,6 @@
     o.connect(g).connect(c.destination);
     o.start(t); o.stop(t + dur + 0.05);
   }
-  function victory() {   // little 8-bit arpeggio
-    [523, 659, 784, 1047].forEach((f, i) =>
-      setTimeout(() => beep(f, i === 3 ? 0.35 : 0.13, 0.25), i * 110));
-  }
   function distCurve(k) {
     const n = 256, c = new Float32Array(n);
     for (let i = 0; i < n; i++) {
@@ -688,7 +479,7 @@
     const g = c.createGain(); g.gain.value = 0.55;
     o.connect(sh); sh.connect(bp); bp.connect(g); g.connect(dest);
     o.start(); vib.start(); jit.start();
-    const wail = setInterval(() => {          // aaaAAAaaa contour
+    const wail = setInterval(() => {
       const t = c.currentTime;
       const peak = f0 * (1.4 + Math.random() * 0.5);
       o.frequency.cancelScheduledValues(t);
@@ -705,7 +496,7 @@
     comp.threshold.value = -18; comp.ratio.value = 14;
     const master = c.createGain(); master.gain.value = 1.0;
     comp.connect(master); master.connect(c.destination);
-    const voices = [440, 900].map(f => makeVoice(c, f, comp));   // him + her
+    const voices = [440, 900].map(f => makeVoice(c, f, comp));
     const nb = c.createBuffer(1, c.sampleRate, c.sampleRate);
     const d = nb.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -758,15 +549,15 @@
 
   // ---------- UI ----------
   function setScene(m) { els.scene.dataset.mode = m; }
-  function setStatus(tone, hudWord, word, note, file) {
-    els.lamp.dataset.tone = tone;
-    els.statusWord.dataset.tone = tone;
+  function setHud(tone, word) {
     els.hudWord.dataset.tone = tone;
     els.hudTime.dataset.tone = tone;
-    els.hudWord.textContent = hudWord;
-    els.statusWord.textContent = word;
-    els.statusNote.textContent = note;
-    els.fileStatus.innerHTML = file;
+    els.hudWord.textContent = word;
+  }
+  function setBtn(state, label) {
+    els.mainBtn.dataset.state = state;
+    els.mainLabel.textContent = label;
+    els.mainBtn.style.setProperty("--p", 0);
   }
   function fmt(ms) {
     const s = Math.max(0, Math.ceil(ms / 1000));
@@ -775,26 +566,8 @@
     if (h >= 1) return h + "H " + String(Math.floor(s / 60) % 60).padStart(2, "0") + "M";
     return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
   }
-  function nextWednesday() {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    let add = (3 - d.getDay() + 7) % 7;   // 3 = Wednesday
-    if (add === 0) add = 7;
-    d.setDate(d.getDate() + add);
-    return d.getTime();
-  }
-  function showControls(which) {
-    els.idleControls.hidden = which !== "idle";
-    els.armedControls.hidden = which !== "armed";
-    els.doneControls.hidden = which !== "done";
-  }
-  function refreshIdleDial() {
-    if (durationMin === "trip") els.hudTime.textContent = "TRIP";
-    else els.hudTime.textContent = fmt(nextWednesday() - Date.now());
-    els.progFill.style.width = "100%";
-  }
 
-  // ---------- flow ----------
+  // ---------- permission help ----------
   const fsLink = $("fsLink"), copyRow = $("copyRow"), copyUrl = $("copyUrl"), copyBtn = $("copyBtn");
   function showPermHelp(res, err) {
     let framed = false;
@@ -822,10 +595,8 @@
       " · result=" + (res || "none") +
       (err ? " · error=" + (err.name || "?") + ": " + (err.message || "") : "") + "</span>";
     els.permWarn.hidden = false;
-    els.permWarn.scrollIntoView({ block: "nearest" });
   }
   fsLink.addEventListener("click", () => {
-    // also try breaking out of the embedding frame directly
     try { window.top.location.href = location.href; } catch (e) {}
   });
   copyBtn.addEventListener("click", async () => {
@@ -837,7 +608,8 @@
     setTimeout(() => { copyBtn.textContent = "copy"; }, 1800);
   });
 
-  els.armBtn.addEventListener("click", async () => {
+  // ---------- flow ----------
+  async function armFlow() {
     unlockAudio();
     els.permWarn.hidden = true;
     if (typeof DeviceMotionEvent !== "undefined" &&
@@ -850,16 +622,14 @@
     window.addEventListener("devicemotion", onMotion);
     keepAwake();
     startArming();
-  });
+  }
 
   let armingTimer = 0;
   function startArming() {
     mode = "arming"; setScene("arming");
     armingLeft = 8;
-    showControls("armed");
-    setStatus("armed", "GET READY", "ARMING", "put the phone down NOW", "2 sunbathers · <b>settling in</b>");
-    els.dialSub.innerHTML = "put the phone <b>down flat</b> — arming…";
-    els.meterHint.textContent = "calibrating — the phone should already be resting";
+    setHud("armed", "GET READY");
+    setBtn("active", "Put it down flat…");
     beep(660, 0.09, 0.2);
     els.hudTime.textContent = "00:08";
     armingTimer = setInterval(() => {
@@ -879,22 +649,16 @@
     motionLevel = 0; stillSince = 0;
     armedAt = performance.now();
     armedWall = Date.now();
-    if (durationMin === "trip") { totalMs = 0; endTime = Infinity; }
-    else if (durationMin === "wed") { endTime = nextWednesday(); totalMs = endTime - armedWall; }
-    else { totalMs = durationMin * 60000; endTime = armedWall + totalMs; }
     beep(990, 0.35, 0.25);
-    setStatus("armed", "HANDS OFF", "ARMED", "movement will start the screams for everyone", "2 sunbathers · <b>asleep — do not disturb</b>");
-    els.dialSub.innerHTML = "leave it. <b>walk away.</b>";
-    els.meterHint.textContent = "stay under the ▼ mark or they wake up screaming";
+    setHud("armed", "HANDS OFF");
+    setBtn("active", "Hold 3s to disarm");
   }
 
   function trigger(reason) {
     if (mode !== "armed" && mode !== "alarm") return;
     if (mode !== "alarm") {
       mode = "alarm"; setScene("alarm");
-      document.body.classList.add("flash");
-      setStatus("alarm", "AAAAH!!", "AAAAH!", reason || "movement detected", "2 sunbathers · <b>SCREAMING</b>");
-      els.dialSub.innerHTML = "<b>put it back down!</b>";
+      setHud("alarm", "AAAAH!!");
     }
     stillSince = 0;
     startScream();
@@ -903,97 +667,52 @@
   function calm() {
     mode = "armed"; setScene("armed");
     stopScream();
-    document.body.classList.remove("flash");
-    setStatus("armed", "HANDS OFF", "ARMED", "movement will start the screams for everyone", "2 sunbathers · <b>back to sleep</b>");
-    els.dialSub.innerHTML = "leave it. <b>walk away.</b>";
+    setHud("armed", "HANDS OFF");
+    setBtn("active", "Hold 3s to disarm");
   }
 
-  function finish() {
-    mode = "done"; setScene("done");
-    stopScream();
-    document.body.classList.remove("flash");
-    window.removeEventListener("devicemotion", onMotion);
-    releaseWake();
-    victory();
-    setStatus("ok", "WELL RESTED", "DONE", "session complete, phone untouched", "2 sunbathers · <b>well rested</b>");
-    els.hudTime.textContent = "00:00";
-    els.progFill.style.width = "0%";
-    els.dialSub.innerHTML = "you made it. <b>pick me up.</b>";
-    els.meterHint.textContent = "sensor released";
-    showControls("done");
+  function victory() {   // little 8-bit arpeggio for surviving to the end of the trip
+    [523, 659, 784, 1047].forEach((f, i) =>
+      setTimeout(() => beep(f, i === 3 ? 0.35 : 0.13, 0.25), i * 110));
   }
 
   function disarm() {
     mode = "idle"; setScene("idle");
     clearInterval(armingTimer);
     stopScream();
-    document.body.classList.remove("flash");
     window.removeEventListener("devicemotion", onMotion);
     releaseWake();
-    setStatus("idle", "HANDS OFF", "STANDBY", "set a timer, press arm", "2 sunbathers · <b>asleep</b>");
-    els.dialSub.textContent = "focus session length";
-    els.meterHint.textContent = "the ▼ mark is the scream threshold — live once armed";
-    refreshIdleDial();
-    showControls("idle");
+    setHud("idle", "HANDS OFF");
+    setBtn("idle", "☼ Arm the villa");
   }
 
-  els.againBtn.addEventListener("click", disarm);
-
-  // ---------- hold to disarm ----------
-  let holdRaf = 0, holdStart = 0;
+  // ---------- the one button: tap to arm, hold 3s to disarm ----------
+  let holdRaf = 0, holdStart = 0, holding = false;
   function holdFrame() {
     const p = Math.min(1, (performance.now() - holdStart) / 3000);
-    els.holdBtn.style.setProperty("--p", p);
-    els.holdText.textContent = p >= 1 ? "DISARMED" : "keep holding… " + Math.ceil(3 - p * 3);
-    if (p >= 1) {
-      disarm();
-      els.holdBtn.style.setProperty("--p", 0);
-      els.holdText.textContent = "Hold 3s to disarm";
-      return;
-    }
+    els.mainBtn.style.setProperty("--p", p);
+    els.mainLabel.textContent = p >= 1 ? "DISARMED" : "Keep holding… " + Math.ceil(3 - p * 3);
+    if (p >= 1) { holding = false; disarm(); return; }
     holdRaf = requestAnimationFrame(holdFrame);
   }
-  els.holdBtn.addEventListener("pointerdown", e => {
+  els.mainBtn.addEventListener("pointerdown", e => {
+    if (mode === "idle") return;               // idle uses the click below
     e.preventDefault();
-    els.holdBtn.setPointerCapture(e.pointerId);
+    els.mainBtn.setPointerCapture(e.pointerId);
+    holding = true;
     holdStart = performance.now();
     holdRaf = requestAnimationFrame(holdFrame);
   });
   function holdCancel() {
+    if (!holding) return;
+    holding = false;
     cancelAnimationFrame(holdRaf);
-    els.holdBtn.style.setProperty("--p", 0);
-    els.holdText.textContent = "Hold 3s to disarm";
+    els.mainBtn.style.setProperty("--p", 0);
+    els.mainLabel.textContent = mode === "arming" ? "Put it down flat…" : "Hold 3s to disarm";
   }
-  els.holdBtn.addEventListener("pointerup", holdCancel);
-  els.holdBtn.addEventListener("pointercancel", holdCancel);
-
-  // ---------- test ----------
-  let testing = false;
-  els.testBtn.addEventListener("click", () => {
-    unlockAudio();
-    if (testing) return;
-    testing = true;
-    setScene("alarm");                 // show the panic for the demo
-    startScream();
-    setTimeout(() => { stopScream(); setScene(mode); testing = false; }, 1200);
-  });
-
-  // ---------- settings ----------
-  els.durChips.addEventListener("click", e => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    durationMin = chip.dataset.min;
-    els.durChips.querySelectorAll("[data-min]").forEach(c =>
-      c.setAttribute("aria-pressed", c.dataset.min === String(durationMin) ? "true" : "false"));
-    refreshIdleDial();
-  });
-  els.sensSeg.addEventListener("click", e => {
-    const b = e.target.closest("button");
-    if (!b) return;
-    sensitivity = b.dataset.sens;
-    els.sensSeg.querySelectorAll("button").forEach(x =>
-      x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-  });
+  els.mainBtn.addEventListener("pointerup", holdCancel);
+  els.mainBtn.addEventListener("pointercancel", holdCancel);
+  els.mainBtn.addEventListener("click", () => { if (mode === "idle") armFlow(); });
 
   // ---------- tamper: page hidden / screen locked ----------
   document.addEventListener("visibilitychange", () => {
@@ -1006,48 +725,30 @@
   // ---------- main loop ----------
   function loop() {
     const now = performance.now();
-    const threshold = THRESHOLDS[sensitivity];
+    const left = TRIP_END - Date.now();     // the trip countdown, always on the sky
+    if (mode !== "arming") els.hudTime.textContent = fmt(left);
 
     if (mode === "armed" || mode === "alarm") {
-      const trip = endTime === Infinity;
-      const left = trip ? Infinity : endTime - Date.now();
-      if (left <= 0) { finish(); drawScene(); requestAnimationFrame(loop); return; }
-      els.hudTime.textContent = trip ? fmt(Date.now() - armedWall) : fmt(left);
-      els.progFill.style.width = trip ? "100%" : (left / totalMs * 100) + "%";
+      if (left <= 0) { victory(); disarm(); drawScene(); requestAnimationFrame(loop); return; }
 
-      const pct = Math.min(1, motionLevel / (threshold * 2));
-      const lit = Math.round(pct * N_BLK);
-      blocks.forEach((b, i) => {
-        const on = i < lit;
-        b.className = "blk" + (on ? " on" : "") +
-          (on && i >= N_BLK * 0.5 ? (i >= N_BLK * 0.75 ? " hi" : " mid") : "");
-      });
-      els.motionRead.textContent = motionLevel.toFixed(2);
-
-      if (mode === "armed" && now - armedAt > 1500 && motionLevel > threshold) {
+      if (mode === "armed" && now - armedAt > 1500 && motionLevel > THRESHOLD) {
         trigger("movement detected");
       }
       if (mode === "armed" && gotMotion && now - lastMotionTs > 3000) {
         trigger("screen was locked or page left");
       }
-      if (mode === "armed" && !gotMotion && now - armedAt > 3000) {
-        els.meterHint.textContent = "no motion data arriving — this browser may not expose sensors";
-      }
       if (mode === "alarm") {
-        if (motionLevel < threshold * 0.6) {
+        if (motionLevel < THRESHOLD * 0.6) {
           if (!stillSince) stillSince = now;
           else if (now - stillSince > 2500) calm();
         } else stillSince = 0;
       }
-    } else {
-      blocks.forEach(b => b.className = "blk");
     }
     motionLevel *= 0.93;
     drawScene();
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
-  refreshIdleDial();
 })();
 </script>
 
